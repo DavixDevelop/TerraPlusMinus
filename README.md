@@ -35,12 +35,15 @@ TerraPlusMinus is a plugin which generates the real world terrain and outlines i
 - customize your surface blocks
 - offset x,y and/or z world generation and commands
 - option to disable different biomes
+- option to use different biomes mapping
+- option to override biomes in a bounding box the same way as in [Terra++](https://github.com/BuildTheEarth/terraplusplus)
 - option to disable tree generation
 - lidar is supported in the same way as in [Terra++](https://github.com/BuildTheEarth/terraplusplus)
 - automatic datapack installation
 - set coordinate bounds to prevent players from teleporting to areas, which are being worked on by other build teams
 - custom tree generation
 - link your servers to generate different height sections ([preview](https://youtu.be/oqROhmaSxgY?si=Hl8zi3lAVEWfAGHy))
+- use plugin add-ons for improved features
 
 # Images
 
@@ -146,6 +149,7 @@ passthrough_tpll: ''
 
 # Generation -------------------------------------------
 # Offset your section which fits into the world.
+# Ensure the x and z offset is a multiple of 16
 terrain_offset:
   x: 0
   y: 0
@@ -170,7 +174,7 @@ linked_worlds:
 generate_trees: true
 
 # The biomes will be generated with https://en.wikipedia.org/wiki/K%C3%B6ppen_climate_classification.
-# If turned off, everything will be plains biome.
+# If turned off, the default Terra121 biome mapping will be used.
 different_biomes: true
 
 # Customize the material, the blocks will be generated with.
