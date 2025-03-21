@@ -13,7 +13,7 @@
 
     <description>A plugin which implements the terra-- api in a papermc plugin</description>
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <url>https://bte-germany.de</url>
@@ -44,6 +44,20 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>blue.lhf</groupId>
+                <artifactId>run-paper-maven-plugin</artifactId>
+                <version>1.1.1</version>
+                <configuration>
+                    <minecraftVersion>1.20.6</minecraftVersion>
+                    <acceptEula>true</acceptEula>
+                    <serverDirectory>run</serverDirectory>
+                    <jvmFlags>
+                        <flag>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:25566</flag>
+                        <flag>--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED</flag>
+                    </jvmFlags>
+                </configuration>
             </plugin>
         </plugins>
         <resources>
@@ -81,6 +95,14 @@
         </repository>
     </repositories>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>kiputyttö-releases</id>
+            <name>Ilari's Project Repository</name>
+            <url>https://maven.lhf.blue/releases</url>
+        </pluginRepository>
+    </pluginRepositories>
+
     <dependencies>
         <dependency>
             <groupId>io.papermc.paper</groupId>
@@ -108,10 +130,15 @@
             <artifactId>gson</artifactId>
             <version>2.8.9</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>com.github.BTEUK</groupId>
             <artifactId>terraminusminus</artifactId>
-            <version>22449a34bf</version>
+            <version>feature~paper_1_21-SNAPSHOT</version>
+        </dependency>-->
+        <dependency>
+            <groupId>com.github.DavixDevelop</groupId>
+            <artifactId>terraminusminus</artifactId>
+            <version>633ffdd76b</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -131,19 +158,19 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-buffer</artifactId>
-            <version>4.1.111.Final</version>
+            <version>4.1.118.Final</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>RELEASE</version>
+            <version>26.0.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
+            <version>2.14.0</version>
         </dependency>
         <dependency>
             <groupId>net.daporkchop.lib</groupId>
@@ -160,6 +187,11 @@
             <artifactId>ProtocolLib</artifactId>
             <version>4.7.0</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>fastutil</artifactId>
+            <version>8.5.6</version>
         </dependency>
     </dependencies>
 </project>

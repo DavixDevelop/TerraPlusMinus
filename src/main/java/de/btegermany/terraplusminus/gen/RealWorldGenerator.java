@@ -3,17 +3,16 @@ package de.btegermany.terraplusminus.gen;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
 import de.btegermany.terraplusminus.Terraplusminus;
-import de.btegermany.terraplusminus.gen.tree.TreePopulator;
 import de.btegermany.terraplusminus.utils.ConfigurationHelper;
 import lombok.Getter;
-import net.buildtheearth.terraminusminus.generator.CachedChunkData;
-import net.buildtheearth.terraminusminus.generator.ChunkDataLoader;
-import net.buildtheearth.terraminusminus.generator.EarthGeneratorSettings;
+import net.buildtheearth.terraminusminus.generator.*;
 import net.buildtheearth.terraminusminus.projection.GeographicProjection;
 import net.buildtheearth.terraminusminus.projection.transform.OffsetProjectionTransform;
 import net.buildtheearth.terraminusminus.substitutes.BlockState;
 import net.buildtheearth.terraminusminus.substitutes.BukkitBindings;
 import net.buildtheearth.terraminusminus.substitutes.ChunkPos;
+import net.daporkchop.lib.common.reference.ReferenceStrength;
+import net.daporkchop.lib.common.reference.cache.Cached;
 import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -54,11 +53,31 @@ public class RealWorldGenerator extends ChunkGenerator {
     @Getter
     private final EarthGeneratorSettings settings;
     @Getter
+    private final GeographicProjection projection;
+    @Getter
     private final int yOffset;
+    @Getter
+    private final int xOffset;
+    @Getter
+    private final int zOffset;
     private Location spawnLocation = null;
 
+    @Getter
+    private final BlockPopulator[] populators;
+
+    protected transient final Cached<EarthBiomeProvider> biomeProvider;
+
+    public final EarthBiomeProvider getBiomeProvider() {
+        return biomeProvider.get();
+    }
+
+    protected final Cached<GeneratorDatasets> datasets;
+
+    public final GeneratorDatasets getDatasets(){
+        return datasets.get();
+    }
+
     private final LoadingCache<ChunkPos, CompletableFuture<CachedChunkData>> cache;
-    private final CustomBiomeProvider customBiomeProvider;
 
 
     private final Material surfaceMaterial;
@@ -76,11 +95,16 @@ public class RealWorldGenerator extends ChunkGenerator {
 
         EarthGeneratorSettings settings = EarthGeneratorSettings.parse(EarthGeneratorSettings.BTE_DEFAULT_SETTINGS);
 
+        //Ensure the offset is the nearest lower multiple of 16
+        this.xOffset = Terraplusminus.config.getInt("terrain_offset.x") & ~15;
+        this.zOffset = Terraplusminus.config.getInt("terrain_offset.z") & ~15;
+
         GeographicProjection projection = new OffsetProjectionTransform(
                 settings.projection(),
-                Terraplusminus.config.getInt("terrain_offset.x"),
-                Terraplusminus.config.getInt("terrain_offset.z")
+                xOffset,
+                zOffset
         );
+
         if (yOffset == 0) {
             this.yOffset = Terraplusminus.config.getInt("terrain_offset.y");
         } else {
@@ -88,12 +112,20 @@ public class RealWorldGenerator extends ChunkGenerator {
         }
 
         this.settings = settings.withProjection(projection);
+        this.projection = projection;
 
-        this.customBiomeProvider = new CustomBiomeProvider(projection);
+        Map<String, Object> datasetsMap = RealWorldGeneratorPipelines.datasets(this.settings);
+        GeneratorDatasets generatorDatasets = new GeneratorDatasets(datasetsMap, this.projection);
+
+        biomeProvider = Cached.global(() -> new EarthBiomeProvider(generatorDatasets, RealWorldGeneratorPipelines.biomeFilters(this.settings)), ReferenceStrength.SOFT);
+        datasets = Cached.global(() -> generatorDatasets, ReferenceStrength.SOFT);
+
+        this.populators = RealWorldGeneratorPipelines.populators(this.settings);
+
         this.cache = CacheBuilder.newBuilder()
                 .expireAfterAccess(5L, TimeUnit.MINUTES)
                 .softValues()
-                .build(new ChunkDataLoader(this.settings));
+                .build(new ChunkDataLoader(getDatasets(), RealWorldGeneratorPipelines.dataBakers(this.settings, getBiomeProvider())));
 
         this.surfaceMaterial = ConfigurationHelper.getMaterial(Terraplusminus.config, "surface_material", GRASS_BLOCK);
         this.materialMapping = Map.of(
@@ -162,7 +194,7 @@ public class RealWorldGenerator extends ChunkGenerator {
 
     @Override
     public BiomeProvider getDefaultBiomeProvider(@NotNull WorldInfo worldInfo) {
-        return this.customBiomeProvider;
+        return new RealBiomeProvider();
     }
 
     @Override
@@ -216,10 +248,18 @@ public class RealWorldGenerator extends ChunkGenerator {
         }
     }
 
-    private CachedChunkData getTerraChunkData(int chunkX, int chunkZ) {
+    public CachedChunkData getTerraChunkData(int chunkX, int chunkZ) {
         try {
             return this.cache.getUnchecked(new ChunkPos(chunkX, chunkZ)).get();
         } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Unrecoverable exception when generating chunk data asynchronously in Terra--", e);
+        }
+    }
+
+    public CompletableFuture<CachedChunkData> getTerraChunkDataAsync(int chunkX, int chunkZ) {
+        try {
+            return this.cache.getUnchecked(new ChunkPos(chunkX, chunkZ));
+        }catch (Exception e){
             throw new RuntimeException("Unrecoverable exception when generating chunk data asynchronously in Terra--", e);
         }
     }
@@ -262,7 +302,7 @@ public class RealWorldGenerator extends ChunkGenerator {
 
     @NotNull
     public List<BlockPopulator> getDefaultPopulators(@NotNull World world) {
-        return Collections.singletonList(new TreePopulator(customBiomeProvider, yOffset));
+        return Arrays.asList(getPopulators());
     }
 
     @Nullable
@@ -303,5 +343,13 @@ public class RealWorldGenerator extends ChunkGenerator {
 
     public boolean shouldGenerateStructures() {
         return false;
+    }
+
+    public ChunkPos getDataChunkPosFromChunk(int chunkX, int chunkZ){
+        return new ChunkPos(chunkX - (xOffset / 16), chunkZ - (zOffset / 16));
+    }
+
+    public ChunkPos getDataChunkPosFromBlock(int x, int z) {
+        return getDataChunkPosFromChunk( x >> 4, z >> 4);
     }
 }

@@ -1,0 +1,39 @@
+- 1.4.0:
+  - Ported add-on support from TerraPlusPlus 
+  - Changed Java version from `1.8` to `21`
+  - Added Maven plugin: `run-paper-maven-plugin`, for easier debugging 
+  - Changed to a fork of terraminusminus that enables adding support for add-ons in consuming projects 
+  - Biomes are now data driven, indirectly via `IBiome<org.bukkit.block.Biome>` (continued `RealBiome`) instead of directly via `org.bukkit.block.Biome` inside biome filters (`IEarthBiomeFilter`)
+  - Added `RealBiomesRegistry`:
+    - `BiomesRegistry::REGISTRY (Map<String, IBiome>)` holds alongside the pseudo enum biome(`IBiome<BiomeEnum>` from TerraMinusMinus),<br> the `RealBiome's` generated from Paper’s Biome registry (populated via `RealBiomesRegistry::init`)
+    - The `String` key inside `BiomesRegistry::REGISTRY` must be in format `"namespace:biomeid"` to replace existing `IBiome<BiomeEnum>` <br> who use the same key as real `org.bukkit.block.Biome`, with `RealBiome`
+    - `RealBiomesRegistry::map` takes as the input parameter any `IBiome` and if It’s not of type `IBiome<org.bukkit.block.Biome>`,<br> it tries to map it to a `RealBiome` or to the default `Biome.OCEAN` based `RealBiome`, else it returns the input `IBiome` 
+  - Changes in `Terraplusminus:onEnable`:
+    - `RealBiomesRegistry` is initialized via `RealBiomesRegistry::init` and registered as the default biomes registry via `BiomesRegistry::setDefaultBiomesRegistry`
+  - Added `RealWorldGeneratorPipelines`:
+    - All datasets, data bakers (`IEarthDataBaker`), biome filters (`IEarthBiomeFilter`) and block populators (`RealWorldPopulator`) are first called via `Bukkit::getPluginManager::callEvent`
+    - Datasets are registered via `InitRealDatasetsEvent`
+    - `IEarthDataBaker`, `IEarthBiomeFilter` and `RealWorldPopulator` are registered via `InitRealEarthRegistryEvent`
+    - `KoppenClimateData` is now included in the `GeneratorDatasets`
+    - `RealWorldGeneratorPipelines::biomeFilters` by default returns `TerraPlusMinusBiomeFilter` or the legacy `Terra121BiomeFilter` registered on the key `"biome_filter"`<br> depending on the config (`"different_biomes"` option) and the `UserOverrideBiomeFilter` registered under the key `"biome_overrides"`
+  - Changes in `RealWorldGenerator`:
+    - X and Z offset are now checked to be in **multiples of 16** 
+    - `CachedChunkData` is now being initialized directly via the returned `GeneratorDatasets`, `IEarthBiomeFilter’s` from `RealWorldGeneratorPipelines`, <br> and `TerraMinusMinus:EarthBiomeProvider` also directly initialized via `GeneratorDatasets` and `IEarthBiomeFilter’s` 
+    - Used `GeneratorDatasets`, `EarthBiomeProvider`, `IEarthBiomeFilter’s` are now stored inside `RealWorldGenerator` 
+    - `getDefaultBiomeProvider` now returns `RealBiomeProvider`
+    - Added `getTerraChunkDataAsync` to return `CachedChunkData` from the cache async 
+  - Removed `CustomBiomeProvider` and ported it to `TerraPlusMinusBiomeFilter (IEarthBiomeFilter)`
+  - Added `UserOverrideBiomeFilter` which enables overriding biomes the same way as in TerraPlusPlus 
+  - Added `RealBiomeProvider`:
+    - The provider directly stores the data driven `IBiome's` for the chunk, and It's query (default value -1) counter (continued `RealBiomeProvider.Data`)  in a temporary cache 
+    - If stored `RealBiomeProvider.Data` is missing in the temporary cache, the provider requests `CachedChunkData` from `RealWorldGenerator`, 
+    - `CachedChunkData::biomes` holds numerical biome ids which are converted (vai `RealBiomesRegistry::getBiomeByNumericalId`) to `IBiome's`,<br> and stored as `RealBiomeProvider.Data` in said temporary cache 
+    - For each request of the chunk's `RealBiomeProvider.Data`, the query counter get incremented until It reaches 255 <br>at which point said chunk `RealBiomeProvider.Data` is removed from the temporary cache
+    - `RealBiomeProvider::getBiomes`, instead of a fixed `List<org.bukkit.block.Biome>`, returns an list of biomes registered in `BiomeRegistry::REGISTRY` <br>that are based on `org.bukkit.block.Biome` (implement `IBiome<org.bukkit.block.Biome>`)
+    - This approach enables the use of all vanilla + possible custom biomes inside biome filters from future plugin add-on's
+  - Added `RealWorldPopulator (BlockPopulator)`:
+    - All block populators that wish to use the `CachedChunkData` from `RealWorldGenerator` must extend this class and override the second populate method<br> instead of the default populate method
+    - Default `populate` method gets the `CachedChunkData` from `RealWorldGenerator`, and passes it over alongside other parameters to the second populate method:
+    ```java 
+    populate(@NotNull WorldInfo worldInfo, @NotNull Random random, @NotNull int x, @NotNull int z, @NotNull int xOffset, @NotNull int zOffset, @NotNull int yOffset, @NotNull LimitedRegion limitedRegion, @NotNull CachedChunkData chunkData) {}
+    ```

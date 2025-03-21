@@ -8,6 +8,7 @@ import de.btegermany.terraplusminus.commands.WhereCommand;
 import de.btegermany.terraplusminus.events.PlayerJoinEvent;
 import de.btegermany.terraplusminus.events.PlayerMoveEvent;
 import de.btegermany.terraplusminus.events.PluginMessageEvent;
+import de.btegermany.terraplusminus.gen.RealBiomesRegistry;
 import de.btegermany.terraplusminus.gen.RealWorldGenerator;
 import de.btegermany.terraplusminus.utils.ConfigurationHelper;
 import de.btegermany.terraplusminus.utils.FileBuilder;
@@ -17,6 +18,7 @@ import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.buildtheearth.terraminusminus.TerraConfig;
+import net.buildtheearth.terraminusminus.generator.BiomesRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -87,6 +89,12 @@ public final class Terraplusminus extends JavaPlugin implements Listener {
         if (Terraplusminus.config.getBoolean("linked_worlds.enabled")) {
             Bukkit.getPluginManager().registerEvents(new PlayerJoinEvent(playerHashMapManagement), this);
         }
+        // --------------------------
+
+        // Register T-- biomes registry
+        RealBiomesRegistry biomesRegistry = new RealBiomesRegistry();
+        BiomesRegistry.setDefaultBiomesRegistry(biomesRegistry);
+
         // --------------------------
 
         TerraConfig.reducedConsoleMessages = Terraplusminus.config.getBoolean("reduced_console_messages"); // Disables console log of fetching data

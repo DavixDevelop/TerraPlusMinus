@@ -1,63 +1,40 @@
-package de.btegermany.terraplusminus.gen;
+package de.btegermany.terraplusminus.gen.biome;
 
 import de.btegermany.terraplusminus.Terraplusminus;
 import de.btegermany.terraplusminus.data.KoppenClimateData;
-import net.buildtheearth.terraminusminus.projection.GeographicProjection;
+import de.btegermany.terraplusminus.gen.RealWorldGeneratorPipelines;
+import net.buildtheearth.terraminusminus.dataset.IScalarDataset;
+import net.buildtheearth.terraminusminus.generator.ChunkBiomesBuilder;
+import net.buildtheearth.terraminusminus.generator.GeneratorDatasets;
+import net.buildtheearth.terraminusminus.generator.biome.IEarthBiomeFilter;
 import net.buildtheearth.terraminusminus.projection.OutOfProjectionBoundsException;
+import net.buildtheearth.terraminusminus.substitutes.ChunkPos;
+import net.buildtheearth.terraminusminus.substitutes.IBiome;
+import net.buildtheearth.terraminusminus.util.CornerBoundingBox2d;
+import net.buildtheearth.terraminusminus.util.bvh.Bounds2d;
 import org.bukkit.block.Biome;
-import org.bukkit.generator.BiomeProvider;
-import org.bukkit.generator.WorldInfo;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CompletableFuture;
 
-public class CustomBiomeProvider extends BiomeProvider {
+public class TerraPlusMinusBiomeFilter implements IEarthBiomeFilter<double[]> {
 
-    private final KoppenClimateData climateData = new KoppenClimateData();
-    double biomeData;
-
-    public static List<Biome> biomeList = new ArrayList<>(Arrays.asList(Biome.OCEAN, Biome.JUNGLE, Biome.BAMBOO_JUNGLE, Biome.SPARSE_JUNGLE, Biome.SAVANNA, Biome.DESERT, Biome.PLAINS, Biome.SUNFLOWER_PLAINS, Biome.BEACH, Biome.WINDSWEPT_GRAVELLY_HILLS,
-            Biome.FLOWER_FOREST, Biome.STONY_PEAKS, Biome.SAVANNA_PLATEAU, Biome.WOODED_BADLANDS, Biome.SNOWY_TAIGA, Biome.OLD_GROWTH_SPRUCE_TAIGA, Biome.SWAMP, Biome.OLD_GROWTH_PINE_TAIGA, Biome.FOREST, Biome.DARK_FOREST,
-            Biome.TAIGA, Biome.FROZEN_PEAKS, Biome.SNOWY_PLAINS, Biome.ICE_SPIKES));
-
-    private GeographicProjection projection;
-
-    public CustomBiomeProvider(GeographicProjection projection) {
-        this.projection = projection;
-    }
-
-    @NotNull
     @Override
-    public Biome getBiome(@NotNull WorldInfo worldInfo, int x, int y, int z) {
-        if (Terraplusminus.config.getBoolean("different_biomes")) {
-            double[] coords;
-            try {
-                coords = this.projection.toGeo(x, z);
-            } catch (OutOfProjectionBoundsException ignored) {
-                return Biome.PLAINS;
-            }
-            try {
-                biomeData = this.climateData.getAsync(coords[0], coords[1]).get();
-                return koppenDataToBukkitBiome(biomeData);
-            } catch (InterruptedException | ExecutionException | OutOfProjectionBoundsException e) {
-                e.printStackTrace();
-
-            }
-        } else biomeData = 8;
-        return Biome.PLAINS;
+    public CompletableFuture<double[]> requestData(ChunkPos chunkPos, GeneratorDatasets generatorDatasets, Bounds2d bounds2d, CornerBoundingBox2d boundsGeo) throws OutOfProjectionBoundsException {
+        return generatorDatasets.<IScalarDataset>getCustom(RealWorldGeneratorPipelines.KEY_DATASET_KOPPEN_CLIMATE).getAsync(boundsGeo, 16, 16);
     }
 
-    public double getBiome() {
-        return biomeData;
-    }
-
-    @NotNull
     @Override
-    public List<Biome> getBiomes(@NotNull WorldInfo worldInfo) {
-        return biomeList;
+    public void bake(ChunkPos chunkPos, ChunkBiomesBuilder chunkBiomesBuilder, double[] data) {
+        IBiome<?>[] biomes = chunkBiomesBuilder.state();
+
+        if(data == null){
+            Arrays.fill(biomes, RealBiome.getByBiome(Biome.OCEAN));
+            return;
+        }
+
+        for(int b = 0; b < 256; b++)
+            biomes[b] = RealBiome.getByBiome(koppenDataToBukkitBiome(data[b]));
     }
 
     public static Biome koppenDataToBukkitBiome(double koppenData) {
@@ -139,4 +116,6 @@ public class CustomBiomeProvider extends BiomeProvider {
             }
         }
     }
+
+
 }
