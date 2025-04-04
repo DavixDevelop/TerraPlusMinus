@@ -252,7 +252,7 @@ public class RealWorldGenerator extends ChunkGenerator {
         try {
             return this.cache.getUnchecked(new ChunkPos(chunkX, chunkZ)).get();
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("Unrecoverable exception when generating chunk data asynchronously in Terra--", e);
+            throw new RuntimeException("Unrecoverable exception when generating chunk data synchronously in Terra--", e);
         }
     }
 
