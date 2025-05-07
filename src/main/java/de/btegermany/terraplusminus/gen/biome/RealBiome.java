@@ -1,8 +1,6 @@
 package de.btegermany.terraplusminus.gen.biome;
 
 import de.btegermany.terraplusminus.gen.RealBiomesRegistry;
-import io.papermc.paper.registry.RegistryAccess;
-import io.papermc.paper.registry.RegistryKey;
 import net.buildtheearth.terraminusminus.generator.BiomesRegistry;
 import net.buildtheearth.terraminusminus.substitutes.IBiome;
 import org.bukkit.block.Biome;
@@ -31,7 +29,12 @@ public class RealBiome implements IBiome<Biome> {
         return biome;
     }
 
-    public static IBiome getByBiome(Biome biome){
+    /**
+     * Return the biome handler from the Biomes registry
+     * @param biome The Biome enum
+     * @return The biome handler stored in the BiomesRegistry
+     */
+    public static IBiome<?> fromRegistry(Biome biome){
         String key = biome.getKey().toString();
 
         //If Biome was not yet registered in BiomesRegistry, register it
@@ -40,6 +43,6 @@ public class RealBiome implements IBiome<Biome> {
             RealBiomesRegistry.BIOME_KEYS.put(key, RealBiomesRegistry.BIOME_KEYS.size());
         }
 
-        return BiomesRegistry.REGISTRY.get(key);
+        return BiomesRegistry.getById(key);
     }
 }

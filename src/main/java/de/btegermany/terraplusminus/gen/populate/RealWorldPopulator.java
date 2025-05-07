@@ -28,11 +28,11 @@ public abstract class RealWorldPopulator extends BlockPopulator {
         try {
             final CachedChunkData chunkData = generator.getTerraChunkData(dataChunkPos.x(), dataChunkPos.z());
             if(chunkData != null)
-                populate(worldInfo, random,  chunkX, chunkZ, generator.getXOffset(), generator.getZOffset(), generator.getYOffset(), limitedRegion, chunkData);
+                populate(worldInfo, random,  chunkX, chunkZ, generator.getXOffset(), generator.getZOffset(), generator.getYOffset(), limitedRegion, chunkData, generator);
         }catch (Exception ex){
             Terraplusminus.instance.getLogger().log(Level.SEVERE, "[T+-] Unrecoverable error while running RealWorldPopulator#populate:", ex);
         }
     }
 
-    public abstract void populate(@NotNull WorldInfo worldInfo, @NotNull Random random, @NotNull int chunkX, @NotNull int chunkZ, @NotNull int xOffset, @NotNull int zOffset, @NotNull int yOffset, @NotNull LimitedRegion limitedRegion, @NotNull CachedChunkData chunkData);
+    public abstract void populate(@NotNull WorldInfo worldInfo, @NotNull Random random, @NotNull int chunkX, @NotNull int chunkZ, @NotNull int xOffset, @NotNull int zOffset, @NotNull int yOffset, @NotNull LimitedRegion limitedRegion, @NotNull CachedChunkData chunkData, @NotNull RealWorldGenerator worldGenerator);
 }

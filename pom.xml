@@ -138,7 +138,7 @@
         <dependency>
             <groupId>com.github.DavixDevelop</groupId>
             <artifactId>terraminusminus</artifactId>
-            <version>633ffdd76b</version>
+            <version>8f2f4939ef</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>

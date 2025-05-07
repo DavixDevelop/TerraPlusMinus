@@ -1,7 +1,5 @@
 package de.btegermany.terraplusminus.gen.biome;
 
-import de.btegermany.terraplusminus.Terraplusminus;
-import de.btegermany.terraplusminus.data.KoppenClimateData;
 import de.btegermany.terraplusminus.gen.RealWorldGeneratorPipelines;
 import net.buildtheearth.terraminusminus.dataset.IScalarDataset;
 import net.buildtheearth.terraminusminus.generator.ChunkBiomesBuilder;
@@ -29,12 +27,12 @@ public class TerraPlusMinusBiomeFilter implements IEarthBiomeFilter<double[]> {
         IBiome<?>[] biomes = chunkBiomesBuilder.state();
 
         if(data == null){
-            Arrays.fill(biomes, RealBiome.getByBiome(Biome.OCEAN));
+            Arrays.fill(biomes, RealBiome.fromRegistry(Biome.OCEAN));
             return;
         }
 
         for(int b = 0; b < 256; b++)
-            biomes[b] = RealBiome.getByBiome(koppenDataToBukkitBiome(data[b]));
+            biomes[b] = RealBiome.fromRegistry(koppenDataToBukkitBiome(data[b]));
     }
 
     public static Biome koppenDataToBukkitBiome(double koppenData) {
@@ -56,9 +54,6 @@ public class TerraPlusMinusBiomeFilter implements IEarthBiomeFilter<double[]> {
             }
             case 6 -> {
                 return Biome.SAVANNA;
-            }
-            case 8 -> {
-                return Biome.PLAINS;
             }
             case 9 -> {
                 return Biome.SUNFLOWER_PLAINS;

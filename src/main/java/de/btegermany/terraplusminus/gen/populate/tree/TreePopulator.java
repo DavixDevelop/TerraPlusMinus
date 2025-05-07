@@ -9,6 +9,7 @@ import com.google.gson.stream.JsonReader;
 import de.btegermany.terraplusminus.Terraplusminus;
 import de.btegermany.terraplusminus.gen.RealBiomeProvider;
 import de.btegermany.terraplusminus.gen.RealBiomesRegistry;
+import de.btegermany.terraplusminus.gen.RealWorldGenerator;
 import de.btegermany.terraplusminus.gen.biome.RealBiome;
 import de.btegermany.terraplusminus.gen.populate.RealWorldPopulator;
 import net.buildtheearth.terraminusminus.generator.CachedChunkData;
@@ -87,7 +88,7 @@ public class TreePopulator extends RealWorldPopulator {
     }
 
     @Override
-    public void populate(@NotNull WorldInfo worldInfo, @NotNull Random random, @NotNull int x, @NotNull int z, @NotNull int xOffset, @NotNull int zOffset, @NotNull int yOffset, @NotNull LimitedRegion limitedRegion, @NotNull CachedChunkData data) {
+    public void populate(@NotNull WorldInfo worldInfo, @NotNull Random random, @NotNull int x, @NotNull int z, @NotNull int xOffset, @NotNull int zOffset, @NotNull int yOffset, @NotNull LimitedRegion limitedRegion, @NotNull CachedChunkData data, @NotNull RealWorldGenerator worldGenerator) {
         if(!Terraplusminus.config.getBoolean("generate_trees"))
             return;
 
