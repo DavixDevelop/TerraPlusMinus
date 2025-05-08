@@ -31,7 +31,7 @@ public class RealBiome implements IBiome<Biome> {
 
     /**
      * Return the biome handler from the Biomes registry
-     * @param biome The Biome enum
+     * @param biome And instance of a Biome
      * @return The biome handler stored in the BiomesRegistry
      */
     public static IBiome<?> fromRegistry(Biome biome){

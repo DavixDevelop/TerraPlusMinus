@@ -69,12 +69,8 @@ public class RealBiomeProvider extends BiomeProvider {
         BiomesRegistry.REGISTRY.forEach(((s, biome) -> {
             //Ensure that IBiome::getBiome is not null and is of type org.bukkit.block.Biome,
             //and add it to the list of possible biomes that RealBiomeProvider may use
-            if(biome.getBiome() != null && biome.getBiome() instanceof Biome b){
-                if(!b.equals(Biome.CUSTOM))
-                    biomes.add(b);
-            }
-
-
+            if(biome.getBiome() != null && biome.getBiome() instanceof Biome b)
+                biomes.add(b);
         }));
 
         return biomes;

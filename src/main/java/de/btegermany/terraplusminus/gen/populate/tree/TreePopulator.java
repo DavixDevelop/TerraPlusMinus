@@ -123,23 +123,21 @@ public class TreePopulator extends RealWorldPopulator {
 
                     Location loc = new Location(world, blockX, groundY + 1 + yOffset, blockZ);
                     if (groundY + yOffset < world.getMaxHeight() - 35 && groundY + yOffset > world.getMinHeight() && state == null) {
-                        switch ((Biome) biomes[dx + dz * 16].getBiome()) {
-                            case Biome.DESERT, Biome.SAVANNA, Biome.SAVANNA_PLATEAU: // desert, savanna and savanna plateau
-                                generateCustomTree(limitedRegion, loc, random, "savanna");
-                                break;
-                            case Biome.FLOWER_FOREST: // flower forest
-                                generateCustomTree(limitedRegion, loc, random,"oak", "birch");
-                                break;
-                            case Biome.TAIGA: // taiga
-                                generateCustomTree(limitedRegion, loc, random, "spruce");
-                                break;
-                            case Biome.SNOWY_SLOPES, Biome.SNOWY_PLAINS, Biome.ICE_SPIKES: // snowy regions
+                        Biome biome = (Biome) biomes[dx + dz * 16].getBiome();
+
+
+
+                        if(biome == Biome.DESERT || biome ==  Biome.SAVANNA || biome ==  Biome.SAVANNA_PLATEAU) // desert, savanna and savanna plateau
+                            generateCustomTree(limitedRegion, loc, random, "savanna");
+                        else if(biome == Biome.FLOWER_FOREST) // flower forest
+                            generateCustomTree(limitedRegion, loc, random,"oak", "birch");
+                        else if(biome == Biome.TAIGA) // taiga
+                            generateCustomTree(limitedRegion, loc, random, "spruce");
+                        else if(biome == Biome.SNOWY_SLOPES || biome == Biome.SNOWY_PLAINS || biome == Biome.ICE_SPIKES) {// snowy regions
                                 // TODO: trees with snow
-                                break;
-                            default:
-                                generateCustomTree(limitedRegion, loc, random, "oak", "birch");
-                                break;
                         }
+                        else
+                            generateCustomTree(limitedRegion, loc, random, "oak", "birch");
                     }
                 }
             }
