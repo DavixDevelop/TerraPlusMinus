@@ -7,7 +7,7 @@ import net.buildtheearth.terraminusminus.generator.GeneratorDatasets;
 import net.buildtheearth.terraminusminus.generator.biome.IEarthBiomeFilter;
 import net.buildtheearth.terraminusminus.projection.OutOfProjectionBoundsException;
 import net.buildtheearth.terraminusminus.substitutes.ChunkPos;
-import net.buildtheearth.terraminusminus.substitutes.IBiome;
+import net.buildtheearth.terraminusminus.substitutes.TerraBukkit;
 import net.buildtheearth.terraminusminus.util.CornerBoundingBox2d;
 import net.buildtheearth.terraminusminus.util.bvh.Bounds2d;
 import org.bukkit.block.Biome;
@@ -15,7 +15,7 @@ import org.bukkit.block.Biome;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
-public class TerraPlusMinusBiomeFilter implements IEarthBiomeFilter<double[]> {
+public class KoppenBiomeFilter implements IEarthBiomeFilter<double[]> {
 
     @Override
     public CompletableFuture<double[]> requestData(ChunkPos chunkPos, GeneratorDatasets generatorDatasets, Bounds2d bounds2d, CornerBoundingBox2d boundsGeo) throws OutOfProjectionBoundsException {
@@ -24,15 +24,15 @@ public class TerraPlusMinusBiomeFilter implements IEarthBiomeFilter<double[]> {
 
     @Override
     public void bake(ChunkPos chunkPos, ChunkBiomesBuilder chunkBiomesBuilder, double[] data) {
-        IBiome<?>[] biomes = chunkBiomesBuilder.state();
+        net.buildtheearth.terraminusminus.substitutes.Biome[] biomes = chunkBiomesBuilder.state();
 
         if(data == null){
-            Arrays.fill(biomes, RealBiome.fromRegistry(Biome.OCEAN));
+            Arrays.fill(biomes, TerraBukkit.fromBukkitBiome(Biome.OCEAN));
             return;
         }
 
         for(int b = 0; b < 256; b++)
-            biomes[b] = RealBiome.fromRegistry(koppenDataToBukkitBiome(data[b]));
+            biomes[b] = TerraBukkit.fromBukkitBiome(koppenDataToBukkitBiome(data[b]));
     }
 
     public static Biome koppenDataToBukkitBiome(double koppenData) {

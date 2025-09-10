@@ -7,7 +7,7 @@ import de.btegermany.terraplusminus.events.InitRealBiomeFilterRegistryEvent;
 import de.btegermany.terraplusminus.events.InitRealEarthDataBakerRegistryEvent;
 import de.btegermany.terraplusminus.events.InitRealWorldPopulatorRegistryEvent;
 import de.btegermany.terraplusminus.events.InitRealEarthRegistryEvent;
-import de.btegermany.terraplusminus.gen.biome.TerraPlusMinusBiomeFilter;
+import de.btegermany.terraplusminus.gen.biome.KoppenBiomeFilter;
 import de.btegermany.terraplusminus.gen.populate.tree.TreePopulator;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -61,7 +61,7 @@ public class RealWorldGeneratorPipelines {
     public IEarthBiomeFilter<?>[] biomeFilters(@NonNull EarthGeneratorSettings settings){
         return fire(new InitRealBiomeFilterRegistryEvent(settings,
                 uncheckedCast(new OrderedRegistry<IEarthBiomeFilter<?>>()
-                        .addLast("biome_filter", Terraplusminus.config.getBoolean("different_biomes") ? new TerraPlusMinusBiomeFilter() : new Terra121BiomeFilter())
+                        .addLast("biome_filter", Terraplusminus.config.getBoolean("biomes.legacy_dataset") ? new Terra121BiomeFilter() : new KoppenBiomeFilter())
                         .addLast("biome_overrides", new UserOverrideBiomeFilter(settings.projection()))
                 )) {});
     }
