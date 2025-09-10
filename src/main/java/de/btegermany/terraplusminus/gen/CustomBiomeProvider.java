@@ -105,7 +105,7 @@ public class CustomBiomeProvider extends BiomeProvider {
         });
 
         if(data != null) {
-            final Biome biome = data.getBiome(x, z);
+            final Biome biome = data.getBiome((x - generator.getXOffset()) & 15, (z - generator.getZOffset()) & 15);
 
             //Remove the temp chunk data once the biome provider processes the chunk
             if(data.queryCount == 255) {
